@@ -1,45 +1,41 @@
-# import libraries
+# Import necessary libraries
 library(dplyr)
-library(ggplot2)
+library(DMwR)
+library(caret)
+library(e1071)
 
-# importing data 
+# Import data
 data <- read.csv('Electric_Vehicle_Population_Data.csv')
 
-# Data Pre-Processing
-
-# Initial Summary
-# number of rows
-nrow(data)
-
-
-# check for null values
-is.null(data)
+# Data Pre-processing
 
 # Clean Null Values
-data = na.omit(data)
-nrow(data)
+data <- na.omit(data)
 
-# Remove redundant columns 
-# check for column names
-colnames(data)
-
-# dropping columns
-# State','2020 Census Tract', 'DOL Vehicle ID','Postal Code','Legislative District
-data <- data %>% select(-State, -X2020.Census.Tract, -Postal.Code, -Legislative.District)
-
-# check for column names
-colnames(data)
-
-# remove base msrp values containing zeroes
+# Remove rows where Base.MSRP is 0 (invalid data)
 data <- data %>% filter(Base.MSRP > 0)
 
-# check dataset length 
-nrow(data)
+# Count the number of EV vehicles per county (BEV and PHEV)
+ev_vehicles_count <- data %>%
+  filter(Electric.Vehicle.Type %in% c("Battery Electric Vehicle (BEV)", "Plug-in Hybrid Electric Vehicle (PHEV)")) %>%
+  group_by(County) %>%
+  summarise(EV.Vehicles = n())
 
-# dataset summary
-summary(data)
+# Count the total number of vehicles across all counties
+total_vehicles_all_counties <- data %>%
+  summarise(Total.Vehicles = n()) %>%
+  pull(Total.Vehicles)  # Extract the value from the data frame
 
-# simple linear regression 
-model <- lm(Base.MSRP ~ Electric.Range + Model.Year + Electric.Vehicle.Type + Make, data = data)
+# Calculate the adoption rate for each county (EVs in county / total vehicles across all counties)
+adoption_data <- ev_vehicles_count %>%
+  mutate(Adoption.Rate = (EV.Vehicles / total_vehicles_all_counties) * 100)
 
-summary(model)
+# Inspect the results
+head(adoption_data)
+
+
+########################################DO NOT REMOVE#######################################
+
+
+
+
