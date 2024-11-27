@@ -199,6 +199,41 @@ ggplot(avg_range, aes(x = Model.Year, y = avg_range)) +
   ) +
   scale_x_continuous(breaks = min(data$Model.Year):max(data$Model.Year))
 
+
+# Calculate market share percentages
+market_share <- data %>%
+  group_by(Make) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  mutate(
+    percentage = (count/sum(count)) * 100,
+    # Create label for sectors larger than 3%
+    label = ifelse(percentage >= 3,
+                   sprintf("%s\n%.1f%%", Make, percentage),
+                   "")
+  )
+
+# Create enhanced pie chart
+ggplot(market_share, aes(x = "", y = percentage, fill = Make)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  geom_text(aes(label = label),
+            position = position_stack(vjust = 0.5),
+            size = 3) +
+  theme_minimal() +
+  labs(
+    title = "EV Market Share by Brand in Washington",
+    fill = "Brand (< 3%)"
+  ) +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "right",
+    panel.grid = element_blank()
+  )
+
+
 ## Part 2: Calculation of adoption rates
 
 ## Calculation of adoption rates
@@ -250,6 +285,8 @@ ggplot(brand_county_contribution,
 
 # K-Means Clustering
 
+# vehicles are clustered based on average range and how many average battery electric vehicles
+
 # Prepare data for market segmentation
 segment_data <- merged_data %>%
   group_by(County, Make) %>%
@@ -272,15 +309,6 @@ fviz_nbclust(scaled_features, kmeans, method = "wss") +
   labs(title = "Elbow Method for Optimal k",
        x = "Number of Clusters (k)",
        y = "Total Within Sum of Squares")
-
-# Plot 2: Cluster visualization
-fviz_cluster(kmeans_result, data = scaled_features,
-             geom = "point",
-             ellipse.type = "convex",
-             palette = "Set2",
-             ggtheme = theme_minimal()) +
-  labs(title = "EV Market Segments Clustering",
-       subtitle = "Based on Range, BEV Ratio, and Model Year")
 
 # Plot 3: Feature relationships colored by cluster
 segment_data$Cluster <- as.factor(kmeans_result$cluster)
@@ -323,3 +351,11 @@ ggplot(segment_data, aes(x = avg_range, y = avg_year, color = as.factor(kmeans_r
        y = "Average Model Year",
        color = "Cluster")
 
+# Plot 2: Cluster visualization
+fviz_cluster(kmeans_result, data = scaled_features,
+             geom = "point",
+             ellipse.type = "convex",
+             palette = "Set2",
+             ggtheme = theme_minimal()) +
+  labs(title = "EV Market Segments Clustering",
+       subtitle = "Based on Range, BEV Ratio, and Model Year")
