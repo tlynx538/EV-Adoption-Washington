@@ -1,5 +1,8 @@
 # Analyzing Electric Vehicle Adoption Patterns In Washington State
 
+![Tableau Dashboard](EV-Dashboard.png)
+
+
 Our project analyzes electric vehicle (EV) adoption trends in Washington State. We aim
 to derive insights that can help guide policy decisions, infrastructure investments, and
 promote EV accessibility across various regions. The core objectives include:

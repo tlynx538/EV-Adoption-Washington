@@ -26,6 +26,8 @@ nrow(data)
 # display top 5 rows
 head(data)
 
+# [NEW] Exporting Dataset for use in Tableau
+write.csv(data,file = "cleaned-data.csv")
 
 # remove unnecessary column names
 data <- data %>%
@@ -34,6 +36,7 @@ data <- data %>%
          -Legislative.District,
          -DOL.Vehicle.ID,
          -Vehicle.Location)
+
 
 # display top 5 rows
 head(data)
